@@ -72,6 +72,25 @@ UTermVec wc_args_from_term(Term const &term) {
 
 // }}}
 
+// {{{ definition of StatementStat::StatementStat
+
+StatementStat::StatementStat()
+    : nbrGround0(0)
+    , nbrGround1(0)
+    , nbrGround2(0)
+    , nbrGroundN(0) {}
+
+void StatementStat::incrementCounters(unsigned bodyLiterals) const {
+  switch (bodyLiterals) {
+    case 0: nbrGround0++; break;
+    case 1: nbrGround1++; break;
+    case 2: nbrGround2++; break;
+    default: nbrGroundN++; break;
+  }
+}
+
+// }}}
+
 // {{{ definition of Statement::Statement
 
 Statement::Statement(UHeadAggr &&head, UBodyAggrVec &&body, StatementType type)
@@ -125,6 +144,11 @@ void Statement::print(std::ostream &out) const {
         }
         out << "]";
     }
+}
+
+void Statement::printWithStats(std::ostream &out) const {
+  out << stats.nbrGround0 << "\t" << stats.nbrGround1 << "\t" << stats.nbrGround2 << "\t" << stats.nbrGroundN << "\t";
+  print(out);
 }
 
 // }}}
@@ -340,17 +364,20 @@ void toGround(CreateHead &&head, UBodyAggrVec const &body, ToGroundArg &x, Groun
 } // namespace
 
 void Statement::toGround(ToGroundArg &x, Ground::UStmVec &stms) const {
+    auto size = stms.size(); // remember size of stms (reallocation of emplace_back breaks iterators)
     Ground::RuleType t = Ground::RuleType::NORMAL;
     switch (type) {
         case StatementType::WEAKCONSTRAINT: {
             CreateHead hd{[this](Ground::ULitVec &&lits) -> Ground::UStm { return gringo_make_unique<Ground::WeakConstraint>(wc_args_from_term(wc_term_from_head(head)), std::move(lits)); }};
             Gringo::Input::toGround(std::move(hd), body, x, stms);
+            for(auto it = stms.begin()+size; it != stms.end(); ++it) (*it)->origin = this;
             return;
         }
         case StatementType::EXTERNAL:   { t = Ground::RuleType::EXTERNAL;   break; }
         case StatementType::RULE:       { t = Ground::RuleType::NORMAL;     break; }
     }
     Gringo::Input::toGround(head->toGround(x, stms, t), body, x, stms);
+    for(auto it = stms.begin()+size; it != stms.end(); ++it) (*it)->origin = this;
 }
 
 // }}}

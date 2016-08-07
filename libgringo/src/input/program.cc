@@ -173,7 +173,19 @@ void Program::print(std::ostream &out) const {
     for (auto &x : stms_) { out << *x << "\n"; }
 }
 
+void Program::printWithStats(std::ostream &out) const {
+    for (auto &block : blocks_) {
+        //EDB is uninteresting for rule grounding stats
+        //for (auto &x : block.addedEdb)          { out << x << "." << "\n"; }
+        //for (auto &x : std::get<1>(*block.edb)) { out << x << "." << "\n"; }
+        for (auto &x : block.addedStms)         { x->printWithStats(out); out << "\n"; }
+        for (auto &x : block.stms)              { x->printWithStats(out); out << "\n"; }
+    }
+    for (auto &x : stms_) { x->printWithStats(out); out << "\n"; }
+}
+
 Ground::Program Program::toGround(PredDomMap &domains) {
+    // TODO PS perhaps we should collect stats how often each nongroun rule was touched
     Ground::UStmVec stms;
     stms.emplace_back(make_locatable<Ground::ExternalRule>(Location("#external", 1, 1, "#external", 1, 1)));
     ToGroundArg arg(auxNames_, domains);

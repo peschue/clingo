@@ -143,6 +143,10 @@ struct IncrementalControl : Gringo::Control, Gringo::GringoModule {
             LOG << "************* intermediate program *************" << std::endl << gPrg << std::endl;
             LOG << "*************** grounded program ***************" << std::endl;
             gPrg.ground(params, scripts, out, false);
+            if (opts.verbose) {
+              std::cerr << "body=0\tbody=1\tbody=2\tbody>2\tintermediate-rule" << std::endl;
+              prg.printWithStats(std::cerr);
+            }
         }
     }
     virtual void add(std::string const &name, Gringo::FWStringVec const &params, std::string const &part) {

@@ -23,6 +23,7 @@
 #include "gringo/output/literals.hh"
 #include "gringo/output/output.hh"
 #include "gringo/ground/binders.hh"
+#include "gringo/input/statement.hh"
 #include "gringo/logger.hh"
 #include <limits>
 
@@ -350,12 +351,14 @@ void Rule::report(Output::OutputBase &out) {
                     auto ret(static_cast<PredicateDomain*>(def.domain)->insert(val, fact));
                     if (!std::get<2>(ret)) {
                         rule.head = std::get<0>(ret);
+                        if (origin != NULL) { origin->stats.incrementCounters(rule.body.size()); }
                         out.output(rule);
                     }
                 }
             }
             else {
                 rule.head = nullptr;
+                if (origin != NULL) { origin->stats.incrementCounters(rule.body.size()); }
                 out.output(rule);
             }
             break;
@@ -396,6 +399,7 @@ void WeakConstraint::report(Output::OutputBase &out) {
             auto lit = x->toOutput();
             if (!lit.second) { cond.emplace_back(lit.first->clone()); }
         }
+        if (origin != NULL) { origin->stats.incrementCounters(cond.size()); }
         Output::Minimize min;
         min.elems.emplace_back(
                 std::piecewise_construct,
@@ -1429,6 +1433,7 @@ void HeadAggregateRule::report(Output::OutputBase &out) {
     // NOTE: the head here might be false
     //       it does not make much sense to output the unsatisfiable aggregate head in this case
     //       the delayed output should take this into consideration...
+    if (origin != NULL) { origin->stats.incrementCounters(rule->body.size()); }
     out.output(std::move(rule));
 }
 
@@ -1655,6 +1660,7 @@ void DisjunctionRule::report(Output::OutputBase &out) {
         }
     }
     rule->repr = &state.second;
+    if (origin != NULL) { origin->stats.incrementCounters(rule->body.size()); }
     out.output(std::move(rule));
 }
 

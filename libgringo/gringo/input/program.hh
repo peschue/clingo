@@ -60,6 +60,7 @@ public:
     void rewrite(Defines &defs);
     bool check();
     void print(std::ostream &out) const;
+    void printWithStats(std::ostream &out) const;
     Ground::Program toGround(PredDomMap &domains);
     ~Program();
 

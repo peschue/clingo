@@ -68,6 +68,16 @@ using UStmVec = std::vector<UStm>;
 
 enum class StatementType { RULE, EXTERNAL, WEAKCONSTRAINT };
 
+struct StatementStat {
+  StatementStat();
+  void incrementCounters(unsigned bodyLiterals) const;
+  // the following distinguishes body literals only, the head can be empty, an atom, several atoms, or a choice
+  mutable unsigned nbrGround0; // rule was grounded with empty body
+  mutable unsigned nbrGround1; // rule was grounded with one body literal
+  mutable unsigned nbrGround2; // rule was grounded with two body literals
+  mutable unsigned nbrGroundN; // rule was grounded with more than two body literals
+};
+
 struct Statement : Printable, Locatable {
     Statement(UTerm &&weight, UTerm &&prioriy, UTermVec &&tuple, UBodyAggrVec &&body);
     Statement(UTermVec &&tuple, UBodyAggrVec &&body);
@@ -77,6 +87,7 @@ struct Statement : Printable, Locatable {
     virtual void rewrite2();
     virtual Value isEDB() const;
     virtual void print(std::ostream &out) const;
+    virtual void printWithStats(std::ostream &out) const;
     virtual bool hasPool(bool beforeRewrite) const;
     virtual bool check() const;
     virtual void replace(Defines &dx);
@@ -87,6 +98,7 @@ struct Statement : Printable, Locatable {
     UHeadAggr     head;
     UBodyAggrVec  body;
     StatementType type;
+    StatementStat stats;
 };
 
 // }}}
