@@ -79,4 +79,8 @@ setup(
     #        'sample=sample:main',
     #    ],
     #},
+
+    # TODO here we would need to add some kind of distutils.extension.Extension
+    # however it is currently (3.4) not implemented for C++ so we cannot do it
+    #https://docs.python.org/3/extending/building.html#building-c-and-c-extensions-with-distutils
 )
